@@ -22,16 +22,18 @@ public class DatePickerSteps {
 
     // Chrome's native date picker renders "Today" inside its shadow DOM, which is
     // not reachable via findElement(). We simulate clicking "Today" by setting the
-    // input value to today's date (yyyy-MM-dd) and firing the change event — the
-    // same end result as clicking the Today link in the calendar.
+    // input value to today's local date (yyyy-MM-dd) and firing the change event.
+    // toISOString() is UTC, so just after midnight it is still yesterday and would
+    // disagree with LocalDate.now() in the assertion below.
     @And("I click Today in the date picker")
     public void i_click_today_in_the_date_picker() {
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         JavascriptExecutor js = (JavascriptExecutor) DriverManager.getDriver();
         js.executeScript(
             "var input = document.getElementById('day');" +
-            "var today = new Date().toISOString().split('T')[0];" +
-            "input.value = today;" +
-            "input.dispatchEvent(new Event('change', { bubbles: true }));"
+            "input.value = arguments[0];" +
+            "input.dispatchEvent(new Event('change', { bubbles: true }));",
+            today
         );
         System.out.println("Clicked Today in the date picker.");
     }
